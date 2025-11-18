@@ -1,0 +1,59 @@
+AIM
+Show via code the error propagation properties of ECB and CBC modes, and answer:
+a. If a ciphertext block C1 is corrupted in transmission, are blocks beyond P2 affected?
+b. If a bit error occurs in the source version of P1 (before encryption), how many ciphertext blocks are affected and what is the effect at the receiver?
+# Simple XOR-based block cipher
+def encrypt_block(block, key):
+    return bytes([block[i] ^ key[i] for i in range(8)])
+
+
+def ecb_encrypt(plaintext, key):
+    ciphertext = []
+    for i in range(0, len(plaintext), 8):
+        block = plaintext[i:i+8]
+        ciphertext.append(encrypt_block(block, key))
+    return b''.join(ciphertext)
+
+
+def cbc_encrypt(plaintext, key, iv):
+    ciphertext = []
+    prev = iv
+    for i in range(0, len(plaintext), 8):
+        block = plaintext[i:i+8]
+        xor_block = bytes([block[j] ^ prev[j] for j in range(8)])
+        enc_block = encrypt_block(xor_block, key)
+        ciphertext.append(enc_block)
+        prev = enc_block
+    return b''.join(ciphertext)
+
+
+# ---- MAIN PROGRAM ----
+
+plaintext = b"THISISABLOCKDATA12345678"  # 24 bytes (3 blocks)
+key = b"ABCDEF12"
+iv = b"ABCDEFGH"
+
+print("Plaintext:", plaintext)
+
+# ECB mode
+ecb = ecb_encrypt(plaintext, key)
+print("\nECB Ciphertext:", ecb)
+
+# CBC mode
+cbc = cbc_encrypt(plaintext, key, iv)
+print("\nCBC Ciphertext:", cbc)
+RESULT (VERY IMPORTANT THEORY FOR EXAM)
+(a) Are any blocks beyond P2 affected in CBC mode?
+
+➡ No.
+Only P1 and P2 are affected by an error in C1.
+
+Why?
+
+P1 is decrypted directly from corrupted C1.
+
+P2 is corrupted because it uses C1 during CBC XOR.
+
+P3 and onward are not affected.
+
+✔ Error propagates for exactly 2 blocks in CBC.
