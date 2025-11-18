@@ -1,0 +1,23 @@
+AIM
+To implement a one-time pad version of the Vigenère cipher using random key shifts.
+import random
+
+def otp_encrypt(msg):
+    key = [random.randint(0, 25) for _ in msg]
+    cipher = []
+
+    for i, ch in enumerate(msg):
+        shift = key[i]
+        c = chr((ord(ch) - 65 + shift) % 26 + 65)
+        cipher.append(c)
+
+    return cipher, key
+
+message = "HELLO"
+cipher, key = otp_encrypt(message)
+
+print("Message:", message)
+print("Key:", key)
+print("Cipher:", "".join(cipher))
+Result
+One-Time Pad encryption is performed using random shifts for each letter, producing a perfectly secure cipher.
