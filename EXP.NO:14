@@ -1,0 +1,27 @@
+AIM
+To encrypt text using one-time pad key stream, and then find an alternate key that produces another plaintext.
+alphabet = "abcdefghijklmnopqrstuvwxyz"
+
+def otp_encrypt(text, key):
+    text = text.replace(" ", "")
+    nums = [alphabet.index(c) for c in text]
+    cipher_nums = [(nums[i] + key[i]) % 26 for i in range(len(nums))]
+    return ''.join(alphabet[n] for n in cipher_nums)
+
+def otp_find_key(cipher, plaintext):
+    cipher_nums = [alphabet.index(c) for c in cipher]
+    plain_nums = [alphabet.index(c) for c in plaintext]
+    key = [(cipher_nums[i] - plain_nums[i]) % 26 for i in range(len(cipher_nums))]
+    return key
+
+plaintext = "sendmoremoney"
+key = [9,0,1,7,23,15,21,14,11,11,2,8,9]
+
+cipher = otp_encrypt(plaintext, key)
+print("Cipher:", cipher)
+
+alt_plain = "cashnotneeded"
+new_key = otp_find_key(cipher, alt_plain)
+print("New key stream:", new_key)
+RESULT
+OTP encryption is performed, and an alternative key is generated that decrypts the same ciphertext into another plaintext.
