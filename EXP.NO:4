@@ -1,0 +1,49 @@
+AIM
+To write a C program that implements the Polyalphabetic Substitution Cipher (Vigenère Cipher), where each plaintext letter is encrypted using a shift determined by the corresponding letter of the keyword. Each letter of the key selects a different monoalphabetic substitution alphabet.
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+void vigenere_encrypt(char plaintext[], char key[], char ciphertext[]) {
+    int i, j = 0;
+    int len = strlen(plaintext);
+    int keylen = strlen(key);
+
+    for (i = 0; i < len; i++) {
+        char p = plaintext[i];
+
+        if (isalpha(p)) {
+            char k = toupper(key[j % keylen]) - 'A';
+            
+            if (isupper(p)) {
+                ciphertext[i] = ((p - 'A' + k) % 26) + 'A';
+            } else {
+                ciphertext[i] = ((p - 'a' + k) % 26) + 'a';
+            }
+            j++;
+        } 
+        else {
+            ciphertext[i] = p;
+        }
+    }
+    ciphertext[i] = '\0';
+}
+
+int main() {
+    char plaintext[100], key[50], ciphertext[100];
+
+    printf("Enter plaintext: ");
+    scanf("%s", plaintext);
+
+    printf("Enter key: ");
+    scanf("%s", key);
+
+    vigenere_encrypt(plaintext, key, ciphertext);
+
+    printf("Ciphertext: %s\n", ciphertext);
+
+    return 0;
+}
+RESULT
+
+The polyalphabetic substitution cipher program (Vigenère Cipher) successfully encrypts plaintext by applying different monoalphabetic shifts based on the repeated keyword. Each character of the key determines the shift value used for encrypting the corresponding plaintext character. The output generated matches the expected Vigenère encryption result.
