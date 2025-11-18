@@ -1,0 +1,28 @@
+AIM
+To demonstrate that DSA signatures differ even for the same message because a new random k is used each time.
+import random
+import hashlib
+
+# Simple DSA-like demonstration (NOT secure)
+p = 23
+q = 11
+g = 4
+
+x = 3                 # Private key
+y = pow(g, x, p)      # Public key
+
+def dsa_sign(message):
+    k = random.randint(1, q-1)
+    r = pow(g, k, p) % q
+
+    hash_val = int(hashlib.sha1(message.encode()).hexdigest(), 16)
+    s = ((hash_val + x*r) * pow(k, -1, q)) % q
+
+    return (r, s)
+
+msg = "HELLO"
+print("Signature 1:", dsa_sign(msg))
+print("Signature 2:", dsa_sign(msg))  # Different because k is random
+Result
+
+Even for the same message, DSA signatures differ because the random k changes each time.
