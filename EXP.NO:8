@@ -1,0 +1,46 @@
+AIM
+To implement a monoalphabetic substitution cipher using a keyword, where the keyword is used to generate a cipher alphabet by writing the keyword first and then adding remaining letters of the alphabet in normal order.
+# Monoalphabetic Substitution Cipher Using Keyword
+
+def generate_cipher_alphabet(keyword):
+    keyword = keyword.upper()
+    result = ""
+
+    # Add keyword letters without duplicates
+    for ch in keyword:
+        if ch not in result and ch.isalpha():
+            result += ch
+
+    # Add remaining letters A–Z
+    for ch in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
+        if ch not in result:
+            result += ch
+
+    return result
+
+
+def encrypt(plaintext, cipher_alpha):
+    ciphertext = ""
+    for ch in plaintext:
+        if ch.isalpha():
+            index = ord(ch.upper()) - ord('A')
+            cipher_char = cipher_alpha[index]
+            ciphertext += cipher_char if ch.isupper() else cipher_char.lower()
+        else:
+            ciphertext += ch
+    return ciphertext
+
+
+# MAIN PROGRAM
+keyword = input("Enter keyword: ")
+plaintext = input("Enter plaintext: ")
+
+cipher_alphabet = generate_cipher_alphabet(keyword)
+ciphertext = encrypt(plaintext, cipher_alphabet)
+
+print("\nCipher Alphabet:", cipher_alphabet)
+print("Ciphertext:", ciphertext)
+RESULT
+
+The plaintext was successfully encrypted using a monoalphabetic substitution cipher generated from the keyword CIPHER.
+The keyword-based cipher alphabet was created correctly, and the program produced the correct ciphertext.
