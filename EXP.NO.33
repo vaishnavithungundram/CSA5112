@@ -1,0 +1,16 @@
+AIM
+To simulate DES encryption of a 64-bit block using basic XOR operations (NOT full DES).
+def des_simple_encrypt(block, key):
+    return "".join("1" if block[i] != key[i] else "0" for i in range(64))
+
+plaintext = "01010101" * 8      # 64 bits
+key =       "11110000" * 8      # 64 bits
+
+cipher = des_simple_encrypt(plaintext, key)
+
+print("Plaintext:", plaintext)
+print("Key:", key)
+print("Ciphertext:", cipher)
+Result
+
+Simple DES-like XOR encryption is demonstrated on a 64-bit block.
