@@ -1,0 +1,26 @@
+AIM
+To crack additive cipher automatically using frequency analysis and list likely plaintexts.
+import string
+
+alphabet = string.ascii_lowercase
+
+def additive_decrypt(cipher, key):
+    return ''.join(alphabet[(alphabet.index(c) - key) % 26] for c in cipher)
+
+def frequency_attack(cipher, top=10):
+    scores = {}
+    for key in range(26):
+        plain = additive_decrypt(cipher, key)
+        score = sum(plain.count(c) for c in "etaoin")  # common letters
+        scores[plain] = score
+    ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+    return [p[0] for p in ranked[:top]]
+
+cipher = "wklvlvdpdqxdwwdfnphvvdjh"
+results = frequency_attack(cipher, top=10)
+
+print("\nTop 10 possible plaintexts:")
+for r in results:
+    print("-", r)
+RESULT
+The program generates the 10 most likely plaintexts using frequency analysis without human help.
