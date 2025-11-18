@@ -1,0 +1,68 @@
+AIM
+
+Explain whether it’s safe for Bob to keep the same modulus n after his private key d is leaked, by demonstrating that knowledge of d (with public e and n) lets an attacker factor n and recover the prime factors — therefore the modulus is compromised.
+
+PYTHON CODE (demonstration of factoring n when (n,e,d) known)
+
+This implements the standard attack: compute k = e*d - 1, write k = 2^s * r, pick random g, and try to find a nontrivial factor gcd(y-1,n) where y = g^r mod n and repeated squaring is used (this is the textbook method to factor n given d).
+# Demonstration: given (n,e,d) recover factor p of n
+import random
+import math
+
+def gcd(a,b):
+    while b:
+        a,b = b, a%b
+    return a
+
+def find_factor_from_ed(n, e, d, tries=20):
+    k = e*d - 1
+    if k % 2 == 1:
+        return None
+    # write k = 2^s * r
+    s = 0
+    r = k
+    while r % 2 == 0:
+        r //= 2
+        s += 1
+
+    for _ in range(tries):
+        g = random.randrange(2, n-1)
+        y = pow(g, r, n)
+        if y == 1 or y == n-1:
+            continue
+        for j in range(s):
+            x = pow(y, 2, n)
+            if x == 1:
+                p = gcd(y-1, n)
+                if 1 < p < n:
+                    return p
+                else:
+                    break
+            if x == n-1:
+                break
+            y = x
+    return None
+
+if __name__ == "__main__":
+    # small example (for demo). In real life n is huge.
+    p = 59
+    q = 61
+    n = p*q
+    phi = (p-1)*(q-1)
+    e = 17
+    # compute d
+    # extended Euclid
+    def egcd(a,b):
+        if b==0: return (1,0,a)
+        x,y,g = egcd(b, a%b)
+        return (y, x - (a//b)*y, g)
+    d = pow(e, -1, phi)
+    print("Public n,e:", n, e)
+    print("Leaked d:", d)
+    found = find_factor_from_ed(n, e, d, tries=100)
+    print("Recovered factor:", found)
+    if found:
+        print("Other factor:", n//found)
+RESULT
+
+Not safe. Once d is leaked, an attacker (with n and e) can, with high probability, factor n and recover p and q (and thus can compute any new private key for that n). So generating new (e,d) pairs reusing the same modulus n is unsafe — the modulus must be changed (generate new primes) if d leaked.
