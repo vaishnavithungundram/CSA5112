@@ -1,0 +1,54 @@
+AIM
+To encrypt and decrypt a message using the 2×2 Hill Cipher with key matrix
+import numpy as np
+
+alphabet = "abcdefghijklmnopqrstuvwxyz"
+
+def text_to_numbers(text):
+    return [alphabet.index(c) for c in text]
+
+def numbers_to_text(nums):
+    return ''.join(alphabet[n] for n in nums)
+
+def hill_encrypt(plaintext, key):
+    plaintext = plaintext.replace(" ", "")
+    if len(plaintext) % 2 != 0:
+        plaintext += "x"
+
+    nums = text_to_numbers(plaintext)
+    nums_pairs = np.array(nums).reshape(-1, 2)
+    encrypted = []
+
+    for pair in nums_pairs:
+        result = np.dot(key, pair) % 26
+        encrypted.extend(result)
+
+    return numbers_to_text(encrypted)
+
+def hill_decrypt(cipher, key):
+    det = int(np.round(np.linalg.det(key)))
+    det_inv = pow(det, -1, 26)
+
+    inv_key = det_inv * np.round(det * np.linalg.inv(key)).astype(int) % 26
+
+    nums = text_to_numbers(cipher)
+    nums_pairs = np.array(nums).reshape(-1, 2)
+    decrypted = []
+
+    for pair in nums_pairs:
+        result = np.dot(inv_key, pair) % 26
+        decrypted.extend(result)
+
+    return numbers_to_text(decrypted)
+
+key = np.array([[9, 4], [5, 7]])
+
+plaintext = "meetmeattheusualplaceattenratherthaneightoclock"
+cipher = hill_encrypt(plaintext, key)
+decrypted = hill_decrypt(cipher, key)
+
+print("Ciphertext:", cipher)
+print("Decrypted:", decrypted)
+RESULT
+The Hill Cipher correctly encrypts and decrypts the given message using the key matrix.
+
