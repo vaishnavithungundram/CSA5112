@@ -1,0 +1,44 @@
+AIM
+Explain what happens if participants send x^a mod q
+# Demonstrate correct DH and the invalid swapped-base variant
+
+def dh_shared_secret(g, p, a_secret, b_secret):
+    A = pow(g, a_secret, p)
+    B = pow(g, b_secret, p)
+    s1 = pow(B, a_secret, p)
+    s2 = pow(A, b_secret, p)
+    return A,B,s1,s2
+
+def swapped_variant(a_pub, p, a_secret, b_secret):
+    # participants send x^a mod p where x is the secret... simulate:
+    A = pow(a_secret, a_pub, p)  # this is "x^a"
+    B = pow(b_secret, a_pub, p)  # this is "y^a"
+    # attempt to derive common value:
+    s1 = pow(B, a_secret, p)
+    s2 = pow(A, b_secret, p)
+    return A,B,s1,s2
+
+if __name__ == "__main__":
+    # correct DH
+    p = 23
+    g = 5
+    a = 6
+    b = 15
+    A,B,s1,s2 = dh_shared_secret(g,p,a,b)
+    print("Correct DH:")
+    print("A:", A, "B:", B, "shared s1:", s1, "s2:", s2)
+
+    # swapped base variant with public a_pub = g
+    a_pub = g
+    sA,sB,s1_sw,s2_sw = swapped_variant(a_pub, p, a, b)
+    print("\nSwapped-base variant (send x^a):")
+    print("A (x^a):", sA, "B (y^a):", sB, "s1:", s1_sw, "s2:", s2_sw)
+RESULT / EXPLANATION
+
+The standard Diffie–Hellman uses public generator g and computes A=g^a mod p, B=g^b mod p. Both derive g^{ab} as shared secret.
+
+If participants instead send x^a (i.e., base = secret, exponent = public), the resulting values do not lead to the same shared secret in general — Alice computes (y^a)^x = y^{ax} and Bob computes (x^a)^y = x^{ay}; these are not equal in general. So that protocol is broken / incorrect.
+
+Secure method: Use standard DH: pick large prime p, generator g, exchange g^a and g^b, compute (g^b)^a = (g^a)^b = g^{ab}.
+
+Can Eve break it without finding secrets? Not feasibly — breaking DH requires solving the discrete logarithm problem. Eve cannot find the shared secret unless she can solve DLP for the chosen group (or exploit poor parameters). She cannot easily find the secret numbers either. If small groups or weak parameters are used, attacks (baby-step giant-step, Pollard Rho) may be feasible.
