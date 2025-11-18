@@ -1,0 +1,27 @@
+AIM
+To write a program that implements the Monoalphabetic Substitution Cipher, where each letter in the plaintext is replaced with a corresponding unique letter from a predefined substitution key alphabet. Each plaintext letter always maps to only one ciphertext letter.
+def monoalphabetic_cipher(plaintext, key):
+    ciphertext = ""
+    
+    for ch in plaintext:
+        if ch.isupper():
+            index = ord(ch) - ord('A')      # FIXED
+            ciphertext += key[index].upper()
+        elif ch.islower():
+            index = ord(ch) - ord('a')      # FIXED
+            ciphertext += key[index].lower()
+        else:
+            ciphertext += ch
+
+    return ciphertext
+
+
+# MAIN PROGRAM
+key = input("Enter substitution key (26 letters): ")
+plaintext = input("Enter plaintext: ")
+
+encrypted = monoalphabetic_cipher(plaintext, key)
+print("Ciphertext:", encrypted)
+RESULT
+
+The monoalphabetic substitution cipher program successfully encrypts plaintext by substituting each letter with its corresponding unique key letter. The output verifies that the program correctly performs the mapping using the provided substitution key and generates the expected ciphertext.
