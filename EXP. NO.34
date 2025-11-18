@@ -1,0 +1,17 @@
+AIM
+To demonstrate padding method (1 followed by zeros).
+def pad(message, block_size):
+    bits = ''.join(format(ord(c), '08b') for c in message)
+    pad_len = block_size - (len(bits) % block_size)
+    padding = "1" + "0" * (pad_len - 1)
+    return bits + padding
+
+msg = "HELLO"
+block_size = 64
+
+padded = pad(msg, block_size)
+print("Padded message length:", len(padded))
+print("Padded bits:", padded)
+Result
+
+Padding ensures that every message ends with hidden padding, preventing attackers from identifying message lengths or block patterns.
