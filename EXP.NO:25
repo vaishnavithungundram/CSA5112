@@ -1,0 +1,30 @@
+AIM
+Explain and demonstrate whether knowing that one plaintext block m shares a common factor with n helps an attacker when only ciphertexts are known.
+SHORT ANSWER
+Yes — very much.
+If g = gcd(m, n) > 1 (i.e., m has a nontrivial common factor with n), then an attacker can compute gcd(c, n) where c is the ciphertext for that plaintext block (as an integer between 0 and n-1), because:
+c ≡ m^e (mod n).
+If g divides both m and n, then g divides m^e.
+Therefore g divides the integer m^e and also divides n, so g divides gcd(m^e, n).
+In fact gcd(c, n) = gcd(m^e mod n, n) = gcd(m^e, n) ≥ g.
+Thus computing gcd(c, n) yields a nontrivial factor of n, breaking RSA.
+So knowledge that a plaintext block has a common factor with n (and access to the ciphertext block) gives immediate factorization via gcd, which completely breaks RSA for that modulus.
+# Demonstrate: pick n = p*q, pick m divisible by p, compute c = m^e mod n, show gcd(c,n) recovers p
+
+def demo():
+    p, q = 59, 61
+    n = p*q
+    e = 31
+    # pick m = p * r (so m shares factor p with n)
+    r = 7
+    m = p * r
+    c = pow(m, e, n)
+    g = __import__('math').gcd(c, n)
+    print("n:", n, "p:", p, "q:", q)
+    print("m:", m, "cipher c:", c)
+    print("gcd(c,n) ->", g)
+    # g should equal p (or a divisor)
+demo()
+RESULT
+
+If any plaintext block shares a nontrivial factor with n, an attacker can compute gcd(ciphertext, n) and recover that factor, thus factoring n and breaking RSA. This is why RSA requires plaintext representatives to be relatively prime to n (or more practically, uses proper padding schemes and message formatting so plaintexts do not reveal factors), and why small predictable messages must be avoided or properly encoded.
