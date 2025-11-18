@@ -1,0 +1,35 @@
+AIM
+Demonstrate that if an adversary knows T = MAC(K, X) for a one-block message X, she can compute the CBC-MAC for the two-block message X || (X ⊕ T) and show it equals T (a forgery). Provide code with a toy block cipher to illustrate.
+# Demonstrate CBC-MAC forgery for one-block message
+BLOCK = 8
+
+def encrypt_block(block, key):
+    return bytes(b ^ k for b,k in zip(block, key))
+
+def cbc_mac(message, key, iv=b'\x00'*BLOCK):
+    # message must be multiple of BLOCK
+    prev = iv
+    for i in range(0, len(message), BLOCK):
+        blk = message[i:i+BLOCK]
+        x = bytes(a^b for a,b in zip(blk, prev))
+        prev = encrypt_block(x, key)
+    return prev
+
+if __name__ == "__main__":
+    key = b'K'*8
+    # one-block message X
+    X = b'ABCDEFGH'  # 8 bytes
+    T = cbc_mac(X, key)
+    print("X:", X)
+    print("CBC-MAC T for X:", T.hex())
+
+    # Construct X || (X xor T)
+    X_xor_T = bytes(a^b for a,b in zip(X, T))
+    M2 = X + X_xor_T
+    T2 = cbc_mac(M2, key)
+    print("Constructed second block (X xor T):", X_xor_T.hex())
+    print("CBC-MAC for (X || X⊕T):", T2.hex())
+    print("T2 equals T?", T2 == T)
+RESULT
+
+This demonstrates the classic CBC-MAC forgery when messages of differing lengths are not domain-separated: if the adversary knows T = MAC(K, X), she can produce the two-block message X || (X ⊕ T) whose MAC is again T. This shows why CBC-MAC must be used carefully (include message length or use CMAC/ISO standards) to avoid trivial forgeries.
