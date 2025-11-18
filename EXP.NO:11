@@ -1,0 +1,17 @@
+AIM
+To calculate the number of possible Playfair cipher keys and express them as powers of 2.
+import math
+
+# 25 letters (I/J merged)
+# Playfair key = any permutation of 25 letters
+keys = math.factorial(25)
+
+print("Total possible keys:", keys)
+print("Approximate power of 2:", math.log2(keys))
+RESULT
+
+Total Playfair keys ≈ 2⁸⁵
+
+But many keys produce identical encryption (row/column swaps etc.)
+
+Unique effective keys ≈ 2⁵⁰ (accepted cryptographic estimate)
