@@ -1,0 +1,51 @@
+AIM
+To implement the Affine Caesar Cipher encryption technique using Python and to determine the valid ranges of parameters a and b so that the cipher remains one-to-one (invertible).
+import math
+
+# Function to check if 'a' is allowed (must be coprime with 26)
+def is_valid_a(a):
+    return math.gcd(a, 26) == 1
+
+# Affine Caesar Encryption
+def affine_encrypt(plaintext, a, b):
+    if not is_valid_a(a):
+        return "Error: 'a' is not valid because gcd(a, 26) ≠ 1"
+
+    ciphertext = ""
+
+    for char in plaintext.lower():
+        if char.isalpha():
+            p = ord(char) - ord('a')
+            c = (a * p + b) % 26
+            ciphertext += chr(c + ord('a'))
+        else:
+            ciphertext += char
+
+    return ciphertext
+
+# Main execution
+plaintext = input("Enter plaintext: ")
+a = int(input("Enter value of a: "))
+b = int(input("Enter value of b: "))
+
+print("\nChecking validity of 'a'...")
+if is_valid_a(a):
+    print("Valid a ✔ (gcd(a, 26) = 1)")
+else:
+    print("Invalid a ✘ Cannot encrypt.")
+
+cipher = affine_encrypt(plaintext, a, b)
+print("\nEncrypted Ciphertext:", cipher)
+
+# Show disallowed values of 'a'
+disallowed_a = [x for x in range(26) if math.gcd(x, 26) != 1]
+print("\nValues of 'a' NOT allowed:", disallowed_a)
+RESULT
+
+Value of b → No restriction. Can be 0 to 25.
+
+Value of a → Must be coprime with 26 (gcd(a, 26) = 1).
+
+Disallowed a values → {2, 4, 6, 8, 10, 12, 13, 14, 16, 18, 20, 22, 24}
+
+Ciphertext is successfully generated using the affine function.
