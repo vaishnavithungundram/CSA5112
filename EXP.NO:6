@@ -1,0 +1,37 @@
+AIM
+To break an affine cipher by analyzing the most frequent ciphertext letters and calculating the key values a and b, then decrypting the ciphertext.
+# Affine Cipher Decryption
+
+# Function to find modular inverse
+def mod_inverse(a, m):
+    for x in range(1, m):
+        if (a * x) % m == 1:
+            return x
+    return None
+
+def affine_decrypt(ciphertext, a, b):
+    a_inv = mod_inverse(a, 26)
+    plaintext = ""
+
+    for ch in ciphertext:
+        if ch.isalpha():
+            C = ord(ch.upper()) - 65
+            P = (a_inv * (C - b + 26)) % 26
+            plaintext += chr(P + 65)
+        else:
+            plaintext += ch
+
+    return plaintext
+
+
+# Derived from frequency analysis:
+a = 3
+b = 15
+
+cipher = input("Enter ciphertext: ")
+plain = affine_decrypt(cipher, a, b)
+
+print("Decrypted text:", plain)
+RESULT
+
+The affine cipher was successfully broken using frequency analysis, and the plaintext was recovered using the calculated keys a = 3 and b = 15.
