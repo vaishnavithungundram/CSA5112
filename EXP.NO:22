@@ -1,0 +1,73 @@
+AIM
+Encrypt and decrypt using CBC mode where block cipher is affine modulo 256:
+E(k,p) = (a*p + b) mod 256 with a odd (invertible modulo 256). Demonstrate encryption/decryption correctness.
+Note: I used affine mod256 because you allowed a choice; it avoids external S-DES dependency.
+# CBC with affine cipher modulo 256
+from typing import Tuple
+
+MOD = 256
+
+def egcd(a,b):
+    if b==0: return (1,0,a)
+    x,y,g = egcd(b, a%b)
+    return (y, x - (a//b)*y, g)
+
+def modinv(a, m):
+    # returns inverse of a mod m or None
+    a = a % m
+    x,y,g = egcd(a,m)
+    if g != 1:
+        return None
+    return x % m
+
+def affine_encrypt_block(p: bytes, a:int, b:int) -> bytes:
+    return bytes(((a*pc + b) % MOD) for pc in p)
+
+def affine_decrypt_block(c: bytes, a:int, b:int) -> bytes:
+    ainv = modinv(a, MOD)
+    if ainv is None:
+        raise ValueError("a not invertible mod 256")
+    return bytes(((ainv*(cc - b)) % MOD) for cc in c)
+
+def cbc_encrypt(plaintext: bytes, a:int, b:int, iv: bytes) -> bytes:
+    if len(iv) != 1:
+        # use 1-byte block cipher demonstration, but we can operate on any block length.
+        pass
+    # We'll treat plaintext as sequence of byte-blocks length 1 for simple demo
+    ct = bytearray()
+    prev = iv[0]
+    for p in plaintext:
+        x = p ^ prev
+        c = (a * x + b) % MOD
+        ct.append(c)
+        prev = c
+    return bytes(ct)
+
+def cbc_decrypt(ciphertext: bytes, a:int, b:int, iv: bytes) -> bytes:
+    ainv = modinv(a, MOD)
+    if ainv is None:
+        raise ValueError("a not invertible")
+    pt = bytearray()
+    prev = iv[0]
+    for c in ciphertext:
+        x = (ainv * ((c - b) % MOD)) % MOD
+        p = x ^ prev
+        pt.append(p)
+        prev = c
+    return bytes(pt)
+
+# Demo
+if __name__ == "__main__":
+    # choose a odd so gcd(a,256)=1, e.g., a=5; b arbitrary
+    a,b = 5, 8
+    iv = bytes([0xAA])  # binary IV 1010 1010 (0xAA)
+    # test plaintext in problem: 0000 0001 0010 0011  -> bytes: 0x00,0x01,0x02,0x03
+    plaintext = bytes([0x00, 0x01, 0x02, 0x03])
+    ciphertext = cbc_encrypt(plaintext, a, b, iv)
+    recovered = cbc_decrypt(ciphertext, a, b, iv)
+    print("Plain:", plaintext)
+    print("Cipher:", ciphertext)
+    print("Recovered:", recovered)
+RESULT
+
+CBC with affine modulo 256 works end-to-end; decryption recovers the original plaintext. (S-DES test vectors weren’t used because we used affine mod256 as allowed.)
