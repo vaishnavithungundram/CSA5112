@@ -1,0 +1,27 @@
+AIM
+Encrypt/decrypt using counter mode (CTR) with affine cipher modulo 256 as the underlying block cipher. Demonstrate correctness.
+# CTR mode using affine E(counter) = (a*counter + b) mod 256 as keystream
+def ctr_encrypt(plaintext: bytes, a:int, b:int, counter_start:int=0) -> bytes:
+    ct = bytearray()
+    counter = counter_start
+    for p in plaintext:
+        keystream_byte = (a*counter + b) % 256
+        ct.append(p ^ keystream_byte)
+        counter = (counter + 1) % 256
+    return bytes(ct)
+
+def ctr_decrypt(ciphertext: bytes, a:int, b:int, counter_start:int=0) -> bytes:
+    # symmetric
+    return ctr_encrypt(ciphertext, a, b, counter_start)
+
+if __name__ == "__main__":
+    a,b = 5, 8
+    plaintext = bytes([0x00,0x01,0x00,0x02,0x00,0x04])  # example from prompt (but different cipher)
+    ct = ctr_encrypt(plaintext, a,b, counter_start=0)
+    pt = ctr_decrypt(ct, a,b, counter_start=0)
+    print("Plain:", plaintext)
+    print("Cipher:", ct)
+    print("Recovered:", pt)
+RESULT
+
+CTR encryption/decryption are symmetric; the example shows correct round-trip. (Test vectors for S-DES were not used because we use affine mod256.)
