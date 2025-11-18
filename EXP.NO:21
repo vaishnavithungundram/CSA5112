@@ -1,0 +1,122 @@
+AIM
+
+Show why senders should always add a padding block (even when message already fills an exact number of blocks) and provide Python demos for ECB, CBC, and CFB modes including the padding scheme: 1 bit followed by 0 bits to fill block (implemented as 0x80 followed by 0x00 bytes).
+
+Motivation (short):
+If the final plaintext already matches block length, the receiver cannot distinguish whether the last block is data only or contains padding if padding is optional. Including a padding block makes unambiguous removal of padding possible and avoids ambiguity/vulnerabilities. It also prevents forging of messages and makes implementation simpler.
+# Block-cipher-mode demo + padding (no external libs)
+# Uses an 8-byte toy block cipher: XOR with key (teaching demo only)
+
+BLOCK = 8
+
+def pad_1_then_zeros(data, block=BLOCK):
+    # append 1000... bit pattern: 0x80 then 0x00 bytes until block boundary
+    pad_len = block - (len(data) % block)
+    # Always add padding block even if pad_len == 0
+    if pad_len == 0:
+        pad_len = block
+    return data + bytes([0x80]) + bytes(pad_len-1)
+
+def unpad_1_then_zeros(padded):
+    # find the 0x80 starting from the end
+    i = padded.rfind(bytes([0x80]))
+    if i == -1:
+        raise ValueError("Invalid padding")
+    return padded[:i]
+
+def xor_block(a,b):
+    return bytes(x^y for x,y in zip(a,b))
+
+# toy block encrypt/decrypt (XOR)
+def encrypt_block(block, key):
+    return xor_block(block, key)
+
+def decrypt_block(block, key):
+    return xor_block(block, key)
+
+# ECB
+def ecb_encrypt(plaintext, key):
+    pt = pad_1_then_zeros(plaintext)
+    ct = b''
+    for i in range(0, len(pt), BLOCK):
+        ct += encrypt_block(pt[i:i+BLOCK], key)
+    return ct
+
+def ecb_decrypt(ciphertext, key):
+    pt = b''
+    for i in range(0, len(ciphertext), BLOCK):
+        pt += decrypt_block(ciphertext[i:i+BLOCK], key)
+    return unpad_1_then_zeros(pt)
+
+# CBC
+def cbc_encrypt(plaintext, key, iv):
+    pt = pad_1_then_zeros(plaintext)
+    ct = b''
+    prev = iv
+    for i in range(0, len(pt), BLOCK):
+        x = xor_block(pt[i:i+BLOCK], prev)
+        c = encrypt_block(x, key)
+        ct += c
+        prev = c
+    return ct
+
+def cbc_decrypt(ciphertext, key, iv):
+    pt = b''
+    prev = iv
+    for i in range(0, len(ciphertext), BLOCK):
+        c = ciphertext[i:i+BLOCK]
+        x = decrypt_block(c, key)
+        p = xor_block(x, prev)
+        pt += p
+        prev = c
+    return unpad_1_then_zeros(pt)
+
+# CFB (full-block CFB, encryption and decryption)
+def cfb_encrypt(plaintext, key, iv):
+    pt = plaintext  # CFB does not require padding for full-block segments if exactly block multiples; we will still pad per problem statement
+    pt = pad_1_then_zeros(pt)
+    ct = b''
+    prev = iv
+    for i in range(0, len(pt), BLOCK):
+        s = encrypt_block(prev, key)
+        c = xor_block(s, pt[i:i+BLOCK])
+        ct += c
+        prev = c
+    return ct
+
+def cfb_decrypt(ciphertext, key, iv):
+    pt = b''
+    prev = iv
+    for i in range(0, len(ciphertext), BLOCK):
+        s = encrypt_block(prev, key)
+        p = xor_block(s, ciphertext[i:i+BLOCK])
+        pt += p
+        prev = ciphertext[i:i+BLOCK]
+    return unpad_1_then_zeros(pt)
+
+# Demo runner (example)
+if __name__ == "__main__":
+    key = b'K'*8
+    iv = b'I'*8
+    plaintext = b"HELLO123"   # exactly one block
+    print("Plaintext:", plaintext)
+
+    # If we didn't pad when exact-block, receiver couldn't tell whether last block was data or padding.
+    # So we pad every message: padding block appended even if message is exact-block size.
+
+    ecb_ct = ecb_encrypt(plaintext, key)
+    print("ECB CT:", ecb_ct)
+    print("ECB PT recovered:", ecb_decrypt(ecb_ct, key))
+
+    cbc_ct = cbc_encrypt(plaintext, key, iv)
+    print("CBC CT:", cbc_ct)
+    print("CBC PT recovered:", cbc_decrypt(cbc_ct, key, iv))
+
+    cfb_ct = cfb_encrypt(plaintext, key, iv)
+    print("CFB CT:", cfb_ct)
+    print("CFB PT recovered:", cfb_decrypt(cfb_ct, key, iv))
+RESULT
+
+Padding with a full padding block is recommended so the receiver can unambiguously remove padding even when message length is a multiple of the block size.
+
+The provided demos show correct encryption/decryption for ECB, CBC and CFB using the 1-then-zero pad rule.
