@@ -1,0 +1,57 @@
+AIM
+
+To generate CMAC subkeys K1 and K2 by:
+
+Encrypting an all-zero block.
+
+Left-shifting the block.
+
+XORing a constant (Rb) depending on block size.
+def left_shift(bits):
+    return bits[1:] + "0"
+
+def xor(a, b):
+    return "".join("1" if a[i] != b[i] else "0" for i in range(len(a)))
+
+def generate_cmac_subkeys(block_size):
+    if block_size == 128:
+        Rb = "00000000000000000000000000000087"
+    elif block_size == 64:
+        Rb = "000000000000001B"
+    else:
+        return "Unsupported block size"
+
+    # Convert Rb to binary
+    Rb_bin = bin(int(Rb, 16))[2:].zfill(block_size)
+
+    # Step 1: Encrypt 0-block (simulation only)
+    L = "00000001" * (block_size // 8)  # Dummy output
+
+    # Step 2: Generate K1
+    if L[0] == "0":
+        K1 = left_shift(L)
+    else:
+        K1 = xor(left_shift(L), Rb_bin)
+
+    # Step 3: Generate K2
+    if K1[0] == "0":
+        K2 = left_shift(K1)
+    else:
+        K2 = xor(left_shift(K1), Rb_bin)
+
+    return K1, K2
+
+
+# Example
+print("128-bit CMAC Subkeys:")
+K1, K2 = generate_cmac_subkeys(128)
+print("K1:", K1)
+print("K2:", K2)
+
+print("\n64-bit CMAC Subkeys:")
+K1, K2 = generate_cmac_subkeys(64)
+print("K1:", K1)
+print("K2:", K2)
+Result
+
+CMAC subkeys K1 and K2 are successfully generated for both 64-bit and 128-bit block sizes using left shift and XOR with Rb.
