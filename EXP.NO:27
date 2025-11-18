@@ -1,0 +1,34 @@
+AIM
+Show that encrypting each alphabet letter separately with RSA (mapping A→0 … Z→25 and computing c = m^e mod n) is insecure. Demonstrate the trivial brute-force attack.
+# Small demo: encrypt letters 0..25 and recover by brute force
+def rsa_encrypt(m, e, n):
+    return pow(m, e, n)
+
+def attack_letter_cipher(cipher_value, e, n):
+    # try all 0..25
+    for m in range(26):
+        if pow(m, e, n) == cipher_value:
+            return m
+    return None
+
+if __name__ == "__main__":
+    # example RSA small key (for demo only)
+    p,q = 61, 53
+    n = p*q
+    phi = (p-1)*(q-1)
+    e = 17
+    d = pow(e, -1, phi)
+
+    # Alice encrypts "HELLO" letter-by-letter
+    msg = "HELLO"
+    nums = [ord(ch)-65 for ch in msg]
+    ciphers = [rsa_encrypt(m,e,n) for m in nums]
+    print("Cipher values:", ciphers)
+
+    # Attacker brute forces each ciphertext
+    recovered = [attack_letter_cipher(c, e, n) for c in ciphers]
+    recovered_text = ''.join(chr(m+65) for m in recovered)
+    print("Recovered text by brute force:", recovered_text)
+RESULT
+
+Not secure. The plaintext space is tiny (only 26 values), so an attacker can precompute m^e mod n for m=0..25 and invert every ciphertext instantly. The efficient attack: dictionary/brute-force (or frequency analysis) — always use proper padding and block encoding (e.g., pack multiple letters into a large integer, use OAEP).
