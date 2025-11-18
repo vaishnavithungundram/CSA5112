@@ -1,0 +1,69 @@
+AIM
+Demonstrate that each 48-bit DES subkey is constructed from the left 28 and right 28 bit halves (after PC-1), and that the first 24 bits of each subkey originate from one subset and the second 24 bits from the other subset. The code prints mapping indices for clarity.
+# des_subkey_mapping.py - shows origin mapping for each subkey bit (0..47)
+
+# reuse PC1 and PC2 from previous code
+PC1 = [
+ 57,49,41,33,25,17,9,
+ 1,58,50,42,34,26,18,
+ 10,2,59,51,43,35,27,
+ 19,11,3,60,52,44,36,
+ 63,55,47,39,31,23,15,
+ 7,62,54,46,38,30,22,
+ 14,6,61,53,45,37,29,
+ 21,13,5,28,20,12,4
+]
+
+PC2 = [
+ 14,17,11,24,1,5,
+ 3,28,15,6,21,10,
+ 23,19,12,4,26,8,
+ 16,7,27,20,13,2,
+ 41,52,31,37,47,55,
+ 30,40,51,45,33,48,
+ 44,49,39,56,34,53,
+ 46,42,50,36,29,32
+]
+
+SHIFTS = [1,1,2,2,2,2,2,2,1,2,2,2,2,2,2,1]
+
+def build_index_mapping():
+    # After PC-1, positions 0..55 map to original key positions (1..64 excluding parity)
+    # We'll track which half (C left 0..27 or D right 28..55) each PC2 output bit comes from.
+    # Build list representing positions after PC-1 (index 0..55 = source from original key position)
+    # For mapping we only need to know whether position <28 (left) or >=28 (right).
+    # We'll simulate rotation and PC2 picks and record for each round which half each subkey bit came from.
+    mapping_rounds = []
+    # create "positions after PC1" as 0..55 (we don't need original indices)
+    pos56 = list(range(56))
+    C = pos56[:28]
+    D = pos56[28:]
+    for s in SHIFTS:
+        # rotate
+        C = C[s:]+C[:s]
+        D = D[s:]+D[:s]
+        CD = C+D
+        # PC2 elements are numbers 1..56; convert to 0-based index by subtracting 1,
+        # but PC2 uses positions in the 56-bit CD arrangement; we want which index from CD each maps to.
+        origin_halves = []
+        for pick in PC2:
+            idx = pick - 1
+            origin = 'L' if idx < 28 and CD[idx] < 28 else ('R' if idx >= 28 and CD[idx] >= 28 else ('L' if CD[idx] < 28 else 'R'))
+            # simpler: check the actual CD[idx] original index <28 -> left, else right
+            origin = 'L' if CD[idx] < 28 else 'R'
+            origin_halves.append(origin)
+        mapping_rounds.append(origin_halves)
+    return mapping_rounds
+
+if __name__ == "__main__":
+    rounds = build_index_mapping()
+    for i, r in enumerate(rounds, start=1):
+        left_count = r.count('L')
+        right_count = r.count('R')
+        print(f"Round {i}: L={left_count} bits, R={right_count} bits")
+        # print first 12 origins and last 12 origins
+        print(" first12:", ''.join(r[:12]), " last12:", ''.join(r[12:]))
+        print()
+RESULT
+
+The code demonstrates that each 48-bit subkey is composed of 24 bits coming from the left half (C) and 24 bits from the right half (D) (after PC-1 and rotations). This illustrates the statement: the first 24 bits of each subkey are derived from one subset of 28 bits and the second 24 from the other disjoint subset (though exact order and which bits come first vary by round according to PC-2).
