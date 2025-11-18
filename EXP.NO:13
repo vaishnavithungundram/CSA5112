@@ -1,0 +1,131 @@
+AIM
+To demonstrate how Hill Cipher is broken using known plaintext–ciphertext pairs.
+# Hill cipher key recovery (2x2) from 2 known plaintext digraphs (4 letters)
+# Works modulo 26. Requires that the plaintext pair matrix be invertible mod 26.
+
+import math
+
+ALPH = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+def char_to_num(c):
+    return ALPH.index(c.upper())
+
+def num_to_char(n):
+    return ALPH[n % 26]
+
+def gcd(a,b):
+    while b:
+        a,b = b, a%b
+    return a
+
+def modinv(a, m):
+    # modular inverse of a mod m, returns None if not invertible
+    a = a % m
+    for x in range(1, m):
+        if (a * x) % m == 1:
+            return x
+    return None
+
+def matrix2x2_from_pairs(s4):
+    """
+    Build a 2x2 matrix (as nested lists) from a 4-letter string s4:
+    s4 = p0 p1 p2 p3 representing digraphs (p0 p1) and (p2 p3).
+    We form columns [p0;p1] and [p2;p3], so matrix = [[p0,p2],[p1,p3]]
+    """
+    if len(s4) != 4:
+        raise ValueError("Need exactly 4 letters to make a 2x2 matrix (two digraphs).")
+    nums = [char_to_num(c) for c in s4]
+    return [[nums[0], nums[2]],
+            [nums[1], nums[3]]]
+
+def det_2x2(mat):
+    return (mat[0][0]*mat[1][1] - mat[0][1]*mat[1][0]) % 26
+
+def adjugate_2x2(mat):
+    # adjugate of [[a,b],[c,d]] is [[d,-b],[-c,a]]
+    a,b = mat[0][0], mat[0][1]
+    c,d = mat[1][0], mat[1][1]
+    return [[d % 26, (-b) % 26],
+            [(-c) % 26, a % 26]]
+
+def mat_mult_2x2(A, B):
+    # Multiply two 2x2 matrices mod26
+    return [[(A[0][0]*B[0][0] + A[0][1]*B[1][0]) % 26,
+             (A[0][0]*B[0][1] + A[0][1]*B[1][1]) % 26],
+            [(A[1][0]*B[0][0] + A[1][1]*B[1][0]) % 26,
+             (A[1][0]*B[0][1] + A[1][1]*B[1][1]) % 26]]
+
+def scalar_mult(mat, scalar):
+    return [[(mat[0][0]*scalar) % 26, (mat[0][1]*scalar) % 26],
+            [(mat[1][0]*scalar) % 26, (mat[1][1]*scalar) % 26]]
+
+def invert_2x2_mod26(mat):
+    det = det_2x2(mat)
+    inv_det = modinv(det, 26)
+    if inv_det is None:
+        return None  # not invertible mod26
+    adj = adjugate_2x2(mat)
+    inv = scalar_mult(adj, inv_det)
+    return inv
+
+def recover_key_from_4letters(plain4, cipher4):
+    P = matrix2x2_from_pairs(plain4)
+    C = matrix2x2_from_pairs(cipher4)
+    P_inv = invert_2x2_mod26(P)
+    if P_inv is None:
+        raise ValueError("Plaintext matrix is not invertible mod 26 (gcd(det,26) != 1).")
+    K = mat_mult_2x2(C, P_inv)
+    return K
+
+def pretty_print_mat(mat):
+    return "[[%2d %2d],\n [%2d %2d]]" % (mat[0][0], mat[0][1], mat[1][0], mat[1][1])
+
+# -------------------------
+# Demonstration / example:
+# Use a known key K to produce ciphertext for plaintext "HELP" (digraphs: HE LP),
+# then recover the key from plaintext "HELP" and ciphertext found.
+
+def hill_encrypt_2x2_for_4letters(plain4, K):
+    P = matrix2x2_from_pairs(plain4)
+    C = mat_mult_2x2(K, P)
+    # flatten columns: [c00, c10, c01, c11]
+    nums = [C[0][0], C[1][0], C[0][1], C[1][1]]
+    return ''.join(num_to_char(n) for n in nums)
+
+# Example known key:
+K_known = [[3,3],
+           [2,5]]  # classic example, invertible mod26
+
+plaintext4 = "HELP"   # two digraphs: HE, LP
+cipher4 = hill_encrypt_2x2_for_4letters(plaintext4, K_known)
+
+print("Example: using known key K =", pretty_print_mat(K_known))
+print("Plaintext (4 letters / 2 digraphs):", plaintext4)
+print("Produced ciphertext (4 letters):", cipher4)
+
+# Now recover K from plaintext4 and cipher4
+K_recovered = recover_key_from_4letters(plaintext4, cipher4)
+print("\nRecovered key K (mod 26):")
+print(pretty_print_mat(K_recovered))
+RESULT
+
+The original error occurred because numpy.linalg.inv was given a non-square (or improperly shaped) array. For a 2×2 Hill key recovery you must form proper 2×2 square matrices from two plaintext digraphs and two ciphertext digraphs (4 letters each).
+
+The corrected program builds 2×2 matrices using the two digraphs as columns, computes the modular inverse of the plaintext matrix (checking invertibility mod 26), and recovers the key via 
+𝐾
+=
+𝐶
+𝑃
+−
+1
+(
+m
+o
+d
+26
+)
+K=CP
+−1
+(mod26).
+
+The demonstration shows a full round-trip: using a known key we generate a 4-letter ciphertext, then successfully recover the original key.
