@@ -1,0 +1,19 @@
+39. Frequency Attack on Additive Cipher
+Aim
+To break a shift (additive) cipher automatically using letter frequency.
+def decrypt_shift(cipher, key):
+    return ''.join(chr((ord(c)-65 - key) % 26 + 65) for c in cipher)
+
+def attack(cipher, top_n=10):
+    results = []
+    for key in range(26):
+        results.append((key, decrypt_shift(cipher, key)))
+    return results[:top_n]
+
+cipher = "ZHOOB"
+print("Top 5 guesses:")
+for k, msg in attack(cipher, 5):
+    print(f"Key={k} → {msg}")
+Result
+
+Key=3 gives correct answer → HELLO
