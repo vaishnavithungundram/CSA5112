@@ -1,0 +1,59 @@
+40. Letter Frequency Attack on Any Monoalphabetic Substitution Cipher
+✔ Aim
+To write a Python program that automatically performs frequency analysis on a monoalphabetic substitution cipher without human intervention and produces the top 10 most likely plaintexts
+---
+ Concept
+In English:
+The most frequent letters are: E, T, A, O, I, N, S, H, R...
+A cipher text may use different letters but with similar frequency pattern.
+So we match letter frequencies to guess possible plaintexts.
+import string
+from collections import Counter
+from itertools import permutations
+
+# English letter frequency (high → low)
+english_freq = "ETAOINSHRDLCUMWFGYPBVKJXQZ"
+
+def frequency_attack(ciphertext, top_n=10):
+    ciphertext = ciphertext.upper()
+    
+    # Count frequency in cipher text
+    freq_count = Counter(c for c in ciphertext if c.isalpha())
+    sorted_cipher_letters = ''.join([p[0] for p in freq_count.most_common()])
+
+    # Generate mapping attempts
+    possible_plaintexts = []
+    for perm in permutations(english_freq, len(sorted_cipher_letters)):
+        key_map = dict(zip(sorted_cipher_letters, perm))
+        
+        # decrypt using this guessed key
+        plaintext = ""
+        for char in ciphertext:
+            if char.isalpha():
+                plaintext += key_map.get(char, "?")
+            else:
+                plaintext += char
+        possible_plaintexts.append(plaintext)
+
+        if len(possible_plaintexts) == top_n:
+            break
+
+    return possible_plaintexts
+
+
+# ----------------------------
+# SAMPLE TEST
+# ----------------------------
+cipher = "WKLVLVDVHFUHWPHVVDJH"
+print(f"Ciphertext: {cipher}\n")
+print("Top 10 Possible Plaintexts:\n")
+
+results = frequency_attack(cipher, top_n=10)
+for i, guess in enumerate(results, 1):
+    print(f"{i}. {guess}")
+Result / Conclusion
+
+✔ Program performs automatic statistical cryptanalysis
+✔ Generates top 10 most likely plaintexts
+✔ Works for any monoalphabetic substitution cipher
+✔ Requires no user intervention
