@@ -1,0 +1,48 @@
+C = (a×p + b) mod 26   p = multiplicative inverse of ‘a’
+Aim
+To implement the Affine Caesar Cipher for encryption and decryption using Python.
+# Affine Caesar Cipher
+
+# Function to find modular inverse of 'a'
+def mod_inverse(a, m):
+    for x in range(1, m):
+        if (a * x) % m == 1:
+            return x
+    return None
+
+# Encryption: C = (a*p + b) mod 26
+def encrypt(text, a, b):
+    result = ""
+    for char in text.upper():
+        if char.isalpha():
+            p = ord(char) - 65
+            c = (a * p + b) % 26
+            result += chr(c + 65)
+        else:
+            result += char
+    return result
+
+# Decryption: p = a_inv * (c - b) mod 26
+def decrypt(cipher, a, b):
+    result = ""
+    a_inv = mod_inverse(a, 26)
+    for char in cipher.upper():
+        if char.isalpha():
+            c = ord(char) - 65
+            p = (a_inv * (c - b)) % 26
+            result += chr(p + 65)
+        else:
+            result += char
+    return result
+
+# Sample Input
+text = "HELLO"
+a, b = 5, 8
+cipher = encrypt(text, a, b)
+
+print("Plaintext:", text)
+print("Ciphertext:", cipher)
+print("Decrypted:", decrypt(cipher, a, b))
+Result
+
+Successfully performs Affine Caesar cipher encryption and decryption.
