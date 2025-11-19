@@ -1,0 +1,25 @@
+Aim
+To implement the Hill Cipher using matrix multiplication (encryption only).
+import numpy as np
+
+def hill_encrypt(text, key):
+    text = text.upper().replace(" ", "")
+    key = np.array(key)
+    
+    while len(text) % key.shape[0] != 0:
+        text += 'X'
+
+    result = ""
+    for i in range(0, len(text), key.shape[0]):
+        block = np.array([[ord(c) - 65] for c in text[i:i+key.shape[0]]])
+        encrypted = np.dot(key, block) % 26
+        result += ''.join(chr(int(n) + 65) for n in encrypted)
+    
+    return result
+
+key = [[3, 3], [2, 5]]
+text = "HELLO"
+print("Plaintext:", text)
+print("Ciphertext:", hill_encrypt(text, key))
+Result
+Hill cipher encryption successfully applied.
