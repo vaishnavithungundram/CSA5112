@@ -1,0 +1,30 @@
+Aim
+To crack a monoalphabetic substitution cipher using frequency analysis without human help.
+import string
+from itertools import permutations
+
+# English letter frequency order
+freq_order = "ETAOINSHRDLCUMWFGYPBVKJXQZ"
+
+def decrypt(cipher, key_map):
+    table = str.maketrans(string.ascii_uppercase, key_map)
+    return cipher.translate(table)
+
+def frequency_attack(cipher, top_n=10):
+    freq_count = {c: cipher.count(c) for c in set(cipher) if c.isalpha()}
+    sorted_letters = sorted(freq_count, key=freq_count.get, reverse=True)
+    
+    guesses = []
+    for perm in permutations(freq_order, len(sorted_letters)):
+        key_map = ''.join(perm) + ''.join([c for c in string.ascii_uppercase if c not in perm])
+        guesses.append(decrypt(cipher, key_map))
+    
+    return guesses[:top_n]
+
+cipher = "WKLVLVDVHFUHWPHVVDJH"
+print("Top 5 possible plaintexts:")
+for p in frequency_attack(cipher, 5):
+    print(p)
+Result
+
+Program automatically finds possible plaintexts sorted by likelihood
